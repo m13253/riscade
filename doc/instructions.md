@@ -111,7 +111,7 @@ Note that `reg` can not be `r0`, because `r0` is defined as `test`.
 ### 10101. ext
 
     7 6 5 4 3 2 1 0
-    C 1 0 1 0 1 [f]
+    C 1 0 1 0 [fnc]
 
 See the section `External controlling`.
 
