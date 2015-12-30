@@ -35,7 +35,7 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
 ### 0000000. test
 
     7 6 5 4 3 2 1 0
-    C 0 0 0 [ reg ]
+    C 0 0 0 0 0 0 0
 
     pc = pc+1;
     if(C == fl[7]) {
@@ -55,6 +55,8 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
     if(C == fl[7]) {
         reg = r0;
     }
+
+Note that `reg` can not be `r0`, because `r0` is defined as `test`.
 
 ### 001. swp
 
