@@ -125,7 +125,7 @@ See the section `External controlling`.
         r = r-1;
     }
 
-Since `r` is only 2-bit long, only `r0`, `r1`, `r2`, `r3` could be used.
+Since `r` is only 2-bit long, only `r0`, `r1`, `r2`, `sp` could be used.
 
 ### 10111. inc
 
@@ -137,7 +137,7 @@ Since `r` is only 2-bit long, only `r0`, `r1`, `r2`, `r3` could be used.
         r = r+1;
     }
 
-Since `r` is only 2-bit long, only `r0`, `r1`, `r2`, `r3` could be used.
+Since `r` is only 2-bit long, only `r0`, `r1`, `r2`, `sp` could be used.
 
 ### 110. st
 
