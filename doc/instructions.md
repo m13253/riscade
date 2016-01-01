@@ -4,7 +4,7 @@
 
 Riscade contains at most 16 8-bit registers, they are:
 
-    r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, fl, sp, s0, s1, sc, pc
+    r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, fl, sp, s0, s1, s2, pc
 
 `r0` to `r9` are general registers.
 
@@ -12,13 +12,15 @@ Riscade contains at most 16 8-bit registers, they are:
 
 `sp` is stack pointer.
 
-`s0` and `s1` are data segment pointer.
+`s0` is data segment pointer;
 
-`sc` is code segment pointer.
+`s1` is stack segment pointer;
+
+`s2` is code segment pointer.
 
 `pc` is instruction pointer pointing to the next instruction.
 
-They are encoded into 
+They are encoded into 4-bit binary. So `r0` is `0000` and `pc` is `1111`.
 
 ## Memory
 
@@ -26,13 +28,15 @@ Memory can be at most 64 KiB of RAM. Memory is segmented into segments of 256 by
 
 ## Flag
 
-Bit 0: Condition execution
+Bit 7-4: Interrupt identifier
 
-Bit 1: Carry
+Bit 3: Shift fill-in
 
 Bit 2: Interrupt enabled
 
-Bit 3: Interrupt activated
+Bit 1: Carry
+
+Bit 0: Condition execution
 
 ## Instruction format
 
@@ -42,63 +46,313 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
 
 ### x0000000. NOP: No operation
 
-### c0000001. SAR
+    pc = pc + 1;
 
-### c0000010. SHL
+### c0000001. HLT: Halt until interrupt
 
-### c0000011. SHR
+    pc = pc + 1;
+    while(1) {
+    }
 
-### c0000100. EXT: External control
+### c0000010. IN: External control
 
-### c0000101. SAR1
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = port[r1];
+    }
 
-### c0000110. SHL1
+### c0000011. OUT: External control
 
-### c0000111. SHR1
+    pc = pc + 1;
+    if(c == fl[0]) {
+        port[r1] = r0;
+    }
 
-### c0010000. TSP: Test parity
+### c0000100. SHR: Shift right
 
-### c001rrrr. SWP: Swap register between `r0`
+    pc = pc + 1;
+    if(c == fl[0]) {
+        if(r1 > 0 && r1 < 8) {
+            fl[1] = r0[r1-1];
+            if(fl[3]) {
+                r0 = ~(~r0 >> r1);
+            } else {
+                r0 = r0 >> r1;
+            }
+        } else if(r1 > -8 && r1 < 0) {
+            fl[1] = r0[8-r1];
+            if(fl[3]) {
+                r0 = ~(~r0 << r1);
+            } else {
+                r0 = r0 << r1;
+            }
+        } else {
+            undefined;
+        }
+    }
 
-### c0100000. TSZ: Test zero
+### c0000101. SHR1: Shift right 1 bit
 
-### c010rrrr. CPT: Copy register to `r0`
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[1] = r0[0];
+        r0 = r0 >> 1;
+    }
 
-### c0110000. TSS: Test MSB
+### c0000110. ROR: Rotate right
 
-### c011rrrr. CPF: Copy register from `r0`
+    pc = pc + 1;
+    if(c == fl[0]) {
+        if(r1 > 0 && r1 < 8) {
+            r0 = r0 >> r1 || r0 << (8-r1);
+        } else {
+            undefined;
+        }
+    }
 
-### c1010000. CLR
+### c0000111. ROR1: Rotate right 1 bit
 
-### c1010001. NOT
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = r0 >> 1 || r0 << 7;
+    }
 
-### c1010010. AND
+### c0001000. CII: Set `fl[7:4]` to 0
 
-### c1010011. OR
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[7:4] = 0;
+    }
 
-### c1010100. XOR
+### c0001100. TCE: Toggle `fl[0]`
 
-### c1010101. DBG
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[0] = ~fl[0];
+    }
 
-### c1010110. ADD
+### c00010ff. CLF: Clear flag
 
-### c1010111. SUB
+    assert(ff != 00);
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[ff] = 0;
+    }
 
-### c1011000. MUL
+### c00011ff. STF: Set flag
 
-### c1011001. DIV
+    assert(ff != 00);
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[ff] = 1;
+    }
 
-### c1011010. INC
 
-### c1011011. DEC
+### ca01000a. TSP: Test `a`'s LSB
 
-### c1011100. LD
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[0] = a[0];
+    }
 
-### c1011101. ST
+Note: `a` can only be `r0` or `r1`.
 
-### c110nnnn. IML
+### ca01rrrr. SWP: Swap register between `a` and `rrrr`
 
-### c111nnnn. IMH
+    assert(rrrr = 0);
+    pc = pc + 1;
+    if(c == fl[0]) {
+        tmp = a;
+        a = rrrr;
+        rrrr = tmp;
+    }
+
+Note: `a` can only be `r0` or `r1`.
+
+### ca10000a. TSZ: Test `a` is not zero
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[0] = a != 0;
+    }
+
+Note: `a` can only be `r0` or `r1`.
+
+### ca10rrrr. CPT: Copy register from `rrrr` to `a`
+
+    assert(rrrr = 0);
+    pc = pc + 1;
+    if(c == fl[0]) {
+        a = rrrr;
+    }
+
+Note: `a` can only be `r0` or `r1`.
+
+### ca11000a. TSS: Test `a`'s MSB
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[0] = a[7];
+    }
+
+Note: `a` can only be `r0` or `r1`.
+
+### ca11rrrr. CPF: Copy register from `a` to `rrrr`
+
+    assert(rrrr = 0);
+    pc = pc + 1;
+    if(c == fl[0]) {
+        rrrr = a;
+    }
+
+Note: `a` can only be `r0` or `r1`.
+
+### ca00100a. TSI: Test `fl[7:4]` is not 0
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[0] = fl[7:4] != 0;
+    }
+
+### ca0010ff. TSF: Test flag
+
+    assert(ff != 0);
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[0] = fl[ff];
+    }
+
+### c10s1100. LD: Read a byte from RAM
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = *(s0 << 8 | r1);
+    }
+
+Note: `s` can only be `s0` or `s1`.
+
+### c10s1101. ST: Write a byte to RAM
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        *(s0 << 8 | r1) = r0;
+    }
+
+Note: `s` can only be `s0` or `s1`.
+
+### c1010000. CLR: Set `r0` to zero
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = 0;
+    }
+
+### c1010001. NOT: Bit-wise negative
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = ~r0;
+    }
+
+### c1010010. AND: Bit-wise and
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = r0 & r1;
+    }
+
+### c1010011. OR: Bit-wise or
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = r0 | r1;
+    }
+
+### c1010100. XOR: Bit-wise xor
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = r0 ^ r1;
+    }
+
+### c1010101. DBG: Debugging trap
+
+### c1010110. ADD: Arithmetic add
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[1] = (r0 + r1) >> 8;
+        r0 = (r0 + r1) & 0xff;
+    }
+
+### c1010111. SUB: Arithmetic subtract
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[1] = (r0 - r1) >> 8;
+        r0 = (r0 - r1) & 0xff;
+    }
+
+### c1011000. MUL: Arithmetic unsigned multiply
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0_bak = r0;
+        r1_bak = r1;
+        r0 = (r0_bak * r1_bak) & 0xff;
+        r1 = (r0_bak * r1_bak) >> 8;
+    }
+
+### c1011001. DIV: Arithmetic unsigned divide
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        if(r0 == 0 && r1 == 0) {
+            fl[1] = 1;
+            r0 = 0;
+            r1 = 0;
+        } else if(r0 != 0 && r1 == 0) {
+            fl[1] = 1;
+            r0 = 0xff;
+            r1 = 0;
+        } else {
+            r0_bak = r0;
+            r1_bak = r1;
+            fl[1] = 0;
+            r0 = r0 / r1;
+            r1 = r0 % r1;
+        }
+    }
+
+### c1011010. INC: Arithmetic add 1
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[1] = r0 == 0xff;
+        r0 = r0 + 1;
+    }
+
+### c1011011. DEC: Arithmetic subtract 1
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[1] = r0 == 0x00;
+        r0 = r0 - 1;
+    }
+
+### c110nnnn. IML: Load a immediate number
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0[3:0] = nnnn;
+    }
+
+### c111nnnn. IMH: Load a immediate number
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0[7:4] = nnnn;
+    }
 
 ## External Controlling
 
