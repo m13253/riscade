@@ -40,7 +40,7 @@ Bit 0: Condition execution
 
 ## Instruction format
 
-Each instruction is 8-bit long, the LSB is always condition execution bit. The instruction will only be executed if it is the same as the LSB of register `fl`.
+Each instruction is 8-bit long, the MSB is always condition execution bit. The instruction will only be executed if it is the same as the LSB of register `fl`.
 
 ## Instructions
 
