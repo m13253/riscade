@@ -22,9 +22,15 @@ Riscade contains at most 16 8-bit registers, they are:
 
 They are encoded into 4-bit binary. So `r0` is `0000` and `pc` is `1111`.
 
+When the system is powered on, all registers except `s2` is set to 0, while `s2` is set to `0xff`.
+
 ## Memory
 
-Memory can be at most 64 KiB of RAM. Memory is segmented into segments of 256 bytes.
+Memory can be at most 64 KiB of linear memory space. Memory is segmented into segments of 256 bytes.
+
+Either ROM or RAM can be mapped into each segment of linear memory.
+
+The boot initialization code must be put into address starting from `ff:00`.
 
 ## Flag
 
@@ -34,7 +40,7 @@ Bit 3: Shift fill-in
 
 Bit 2: Interrupt enabled
 
-Bit 1: Carry
+Bit 1: Carry indicator, sometimes error indicator
 
 Bit 0: Condition execution
 
@@ -54,14 +60,20 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
     while(1) {
     }
 
-### `c0000010`. IN: External control
+### `c0000010`. IN: Read I/O port
 
     pc = pc + 1;
     if(c == fl[0]) {
-        r0 = port[r1];
+        if(port_ready[r1]) {
+            r0 = port[r1];
+            fl[1] = 0;
+        } else {
+            r0 = undefined;
+            fl[1] = 1;
+        }
     }
 
-### `c0000011`. OUT: External control
+### `c0000011`. OUT: Write I/O port
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -117,18 +129,11 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
         r0 = r0 >> 1 || r0 << 7;
     }
 
-### `c0001000`. CII: Set `fl[7:4]` to 0
+### `c0001000`. CLI: Set `fl[7:4]` to 0
 
     pc = pc + 1;
     if(c == fl[0]) {
         fl[7:4] = 0;
-    }
-
-### `c0001100`. TCE: Toggle `fl[0]`
-
-    pc = pc + 1;
-    if(c == fl[0]) {
-        fl[0] = ~fl[0];
     }
 
 ### `c00010ff`. CLF: Clear flag
@@ -137,6 +142,13 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
     pc = pc + 1;
     if(c == fl[0]) {
         fl[ff] = 0;
+    }
+
+### `c0001100`. TCE: Toggle `fl[0]`
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[0] = ~fl[0];
     }
 
 ### `c00011ff`. STF: Set flag
@@ -207,14 +219,14 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### `ca00100a`. TSI: Test `fl[7:4]` is not 0
+### `c1001000`. TSI: Test `fl[7:4]` is not 0
 
     pc = pc + 1;
     if(c == fl[0]) {
         fl[0] = fl[7:4] != 0;
     }
 
-### `ca0010ff`. TSF: Test flag
+### `c10010ff`. TSF: Test flag
 
     assert(ff != 0);
     pc = pc + 1;
@@ -239,6 +251,25 @@ Note: `s` can only be `s0` or `s1`.
     }
 
 Note: `s` can only be `s0` or `s1`.
+
+### `c1001110`: LJMP: Long jump
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        tmp = r0;
+        r0 = pc;
+        pc = tmp;
+        tmp = s0;
+        s0 = s3;
+        s3 = tmp;
+    }
+
+### `c1001111`: IRET: Return from interrupt handler
+
+    pc = *(s1 << 8 | sp);
+    sp = sp + 1;
+    s0 = *(s1 << 8 | sp);
+    sp = sp + 1;
 
 ### `c1010000`. CLR: Set `r0` to zero
 
@@ -349,6 +380,22 @@ Note: `s` can only be `s0` or `s1`.
         r0 = r0 - 1;
     }
 
+### `c1011110`: POP: Arithmetic add 1 on `sp`
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[1] = r0 == 0xff;
+        sp = sp + 1;
+    }
+
+### `c1011111`: PUSH: Arithmetic add 1 on `sp`
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        fl[1] = r0 == 0x00;
+        sp = sp - 1;
+    }
+
 ### `c110nnnn`. IML: Load a immediate number
 
     pc = pc + 1;
@@ -363,9 +410,29 @@ Note: `s` can only be `s0` or `s1`.
         r0[7:4] = nnnn;
     }
 
-## External Controlling
+## I/O port
 
-// TODO
+Up to 256 ports are available. Byte stream could be read or written through these ports. They can be connected to UART controllers, USB controllers, GPIO ports, or other external devices.
+
+On simulation, port 0, 1, 2, 3 are assigned to `stdin`, `stdout`, `stderr`, and system call controller.
+
+## Interrupt
+
+When interrupt happens and `fl[2]` is 1, an interrupt will fire.
+
+The hardware will automatically:
+
+    sp = sp - 1;
+    *(s1 << 8 | sp) = s2;
+    sp = sp - 1;
+    *(s1 << 8 | sp) = pc;
+    fl[7:4] = interrupt_no;
+    s2 = 0;
+    pc = 0;
+
+The interrupt handler code at address `00:00` should detect the type of the interrupt by checking `fl[7:4]`.
+
+Note that since `fl[0]` may be either 0 or 1, the interrupt handler should detect, save, and later restore it.
 
 # License
 
