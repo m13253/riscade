@@ -280,7 +280,7 @@ Note: `s` can only be `s0` or `s1`.
     pc = pc + 1;
     if(c == fl[0]) {
     #ifdef NDEBUG
-        halt();
+        reboot();
     #else
         trigger_breakpoint();
     #endif
