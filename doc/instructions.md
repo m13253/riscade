@@ -44,31 +44,31 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
 
 ## Instructions
 
-### x0000000. NOP: No operation
+### `x0000000`. NOP: No operation
 
     pc = pc + 1;
 
-### c0000001. HLT: Halt until interrupt
+### `c0000001`. HLT: Halt until interrupt
 
     pc = pc + 1;
     while(1) {
     }
 
-### c0000010. IN: External control
+### `c0000010`. IN: External control
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0 = port[r1];
     }
 
-### c0000011. OUT: External control
+### `c0000011`. OUT: External control
 
     pc = pc + 1;
     if(c == fl[0]) {
         port[r1] = r0;
     }
 
-### c0000100. SHR: Shift right
+### `c0000100`. SHR: Shift right
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -91,7 +91,7 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
         }
     }
 
-### c0000101. SHR1: Shift right 1 bit
+### `c0000101`. SHR1: Shift right 1 bit
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -99,7 +99,7 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
         r0 = r0 >> 1;
     }
 
-### c0000110. ROR: Rotate right
+### `c0000110`. ROR: Rotate right
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -110,28 +110,28 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
         }
     }
 
-### c0000111. ROR1: Rotate right 1 bit
+### `c0000111`. ROR1: Rotate right 1 bit
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0 = r0 >> 1 || r0 << 7;
     }
 
-### c0001000. CII: Set `fl[7:4]` to 0
+### `c0001000`. CII: Set `fl[7:4]` to 0
 
     pc = pc + 1;
     if(c == fl[0]) {
         fl[7:4] = 0;
     }
 
-### c0001100. TCE: Toggle `fl[0]`
+### `c0001100`. TCE: Toggle `fl[0]`
 
     pc = pc + 1;
     if(c == fl[0]) {
         fl[0] = ~fl[0];
     }
 
-### c00010ff. CLF: Clear flag
+### `c00010ff`. CLF: Clear flag
 
     assert(ff != 00);
     pc = pc + 1;
@@ -139,7 +139,7 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
         fl[ff] = 0;
     }
 
-### c00011ff. STF: Set flag
+### `c00011ff`. STF: Set flag
 
     assert(ff != 00);
     pc = pc + 1;
@@ -148,7 +148,7 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
     }
 
 
-### ca01000a. TSP: Test `a`'s LSB
+### `ca01000a`. TSP: Test `a`'s LSB
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -157,7 +157,7 @@ Each instruction is 8-bit long, the LSB is always condition execution bit. The i
 
 Note: `a` can only be `r0` or `r1`.
 
-### ca01rrrr. SWP: Swap register between `a` and `rrrr`
+### `ca01rrrr`. SWP: Swap register between `a` and `rrrr`
 
     assert(rrrr = 0);
     pc = pc + 1;
@@ -169,7 +169,7 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### ca10000a. TSZ: Test `a` is not zero
+### `ca10000a`. TSZ: Test `a` is not zero
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -178,7 +178,7 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### ca10rrrr. CPT: Copy register from `rrrr` to `a`
+### `ca10rrrr`. CPT: Copy register from `rrrr` to `a`
 
     assert(rrrr = 0);
     pc = pc + 1;
@@ -188,7 +188,7 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### ca11000a. TSS: Test `a`'s MSB
+### `ca11000a`. TSS: Test `a`'s MSB
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -197,7 +197,7 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### ca11rrrr. CPF: Copy register from `a` to `rrrr`
+### `ca11rrrr`. CPF: Copy register from `a` to `rrrr`
 
     assert(rrrr = 0);
     pc = pc + 1;
@@ -207,14 +207,14 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### ca00100a. TSI: Test `fl[7:4]` is not 0
+### `ca00100a`. TSI: Test `fl[7:4]` is not 0
 
     pc = pc + 1;
     if(c == fl[0]) {
         fl[0] = fl[7:4] != 0;
     }
 
-### ca0010ff. TSF: Test flag
+### `ca0010ff`. TSF: Test flag
 
     assert(ff != 0);
     pc = pc + 1;
@@ -222,7 +222,7 @@ Note: `a` can only be `r0` or `r1`.
         fl[0] = fl[ff];
     }
 
-### c10s1100. LD: Read a byte from RAM
+### `c10s1100`. LD: Read a byte from RAM
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -231,7 +231,7 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `s` can only be `s0` or `s1`.
 
-### c10s1101. ST: Write a byte to RAM
+### `c10s1101`. ST: Write a byte to RAM
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -240,44 +240,44 @@ Note: `s` can only be `s0` or `s1`.
 
 Note: `s` can only be `s0` or `s1`.
 
-### c1010000. CLR: Set `r0` to zero
+### `c1010000`. CLR: Set `r0` to zero
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0 = 0;
     }
 
-### c1010001. NOT: Bit-wise negative
+### `c1010001`. NOT: Bit-wise negative
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0 = ~r0;
     }
 
-### c1010010. AND: Bit-wise and
+### `c1010010`. AND: Bit-wise and
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0 = r0 & r1;
     }
 
-### c1010011. OR: Bit-wise or
+### `c1010011`. OR: Bit-wise or
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0 = r0 | r1;
     }
 
-### c1010100. XOR: Bit-wise xor
+### `c1010100`. XOR: Bit-wise xor
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0 = r0 ^ r1;
     }
 
-### c1010101. DBG: Debugging trap
+### `c1010101`. DBG: Debugging trap
 
-### c1010110. ADD: Arithmetic add
+### `c1010110`. ADD: Arithmetic add
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -285,7 +285,7 @@ Note: `s` can only be `s0` or `s1`.
         r0 = (r0 + r1) & 0xff;
     }
 
-### c1010111. SUB: Arithmetic subtract
+### `c1010111`. SUB: Arithmetic subtract
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -293,7 +293,7 @@ Note: `s` can only be `s0` or `s1`.
         r0 = (r0 - r1) & 0xff;
     }
 
-### c1011000. MUL: Arithmetic unsigned multiply
+### `c1011000`. MUL: Arithmetic unsigned multiply
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -303,7 +303,7 @@ Note: `s` can only be `s0` or `s1`.
         r1 = (r0_bak * r1_bak) >> 8;
     }
 
-### c1011001. DIV: Arithmetic unsigned divide
+### `c1011001`. DIV: Arithmetic unsigned divide
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -324,7 +324,7 @@ Note: `s` can only be `s0` or `s1`.
         }
     }
 
-### c1011010. INC: Arithmetic add 1
+### `c1011010`. INC: Arithmetic add 1
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -332,7 +332,7 @@ Note: `s` can only be `s0` or `s1`.
         r0 = r0 + 1;
     }
 
-### c1011011. DEC: Arithmetic subtract 1
+### `c1011011`. DEC: Arithmetic subtract 1
 
     pc = pc + 1;
     if(c == fl[0]) {
@@ -340,14 +340,14 @@ Note: `s` can only be `s0` or `s1`.
         r0 = r0 - 1;
     }
 
-### c110nnnn. IML: Load a immediate number
+### `c110nnnn`. IML: Load a immediate number
 
     pc = pc + 1;
     if(c == fl[0]) {
         r0[3:0] = nnnn;
     }
 
-### c111nnnn. IMH: Load a immediate number
+### `c111nnnn`. IMH: Load a immediate number
 
     pc = pc + 1;
     if(c == fl[0]) {
