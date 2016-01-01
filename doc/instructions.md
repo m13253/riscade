@@ -277,6 +277,15 @@ Note: `s` can only be `s0` or `s1`.
 
 ### `c1010101`. DBG: Debugging trap
 
+    pc = pc + 1;
+    if(c == fl[0]) {
+    #ifdef NDEBUG
+        halt();
+    #else
+        trigger_breakpoint();
+    #endif
+    }
+
 ### `c1010110`. ADD: Arithmetic add
 
     pc = pc + 1;
