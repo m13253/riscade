@@ -24,7 +24,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
     for(;;) {
         uint8_t inst = memory[registers[s2] << 8 | registers[pc]];
         registers[pc]++;
-        if(inst >> 7 != registers[fl] & 1) {
+        if(inst >> 7 != (registers[fl] & 0x1)) {
             continue;
         }
         inst &= 0x7f;
@@ -230,11 +230,12 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
             registers[0] += registers[1];
         // SUB
         } else if(inst == 0x57) {
-            if(registers[0] + (uint8_t) -registers[1] >= 0xff) {
+            if(registers[0] - registers[1] < 0) {
                 registers[fl] |= 0x2;
             } else {
                 registers[fl] &= 0xfd;
             }
+            registers[0] -= registers[1];
         // MUL
         } else if(inst == 0x58) {
             uint16_t prod = registers[0] * registers[1];
@@ -273,12 +274,12 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
                 registers[fl] &= 0xfd;
             }
             registers[0]--;
-        // PUSH
-        } else if(inst == 0x5c) {
-            registers[sp]--;
         // POP
-        } else if(inst == 0x5d) {
+        } else if(inst == 0x5c) {
             registers[sp]++;
+        // PUSH
+        } else if(inst == 0x5d) {
+            registers[sp]--;
         // LJMP
         } else if(inst == 0x5e) {
             uint8_t tmp0 = registers[0];
@@ -307,7 +308,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
 
 int main(int argc, char *argv[]) {
     if(argc < 2) {
-        fprintf(stderr, "Usage: %s ROM.bin\n\n");
+        fprintf(stderr, "Usage: %s ROM.bin\n\n", argv[0]);
         return 1;
     }
     FILE *file = fopen(argv[1], "rb");

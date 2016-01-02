@@ -372,7 +372,7 @@ Note: `s` can only be `s0` or `s1`.
         sp = sp + 1;
     }
 
-### `c1011101`: PUSH: Arithmetic add 1 on `sp`
+### `c1011101`: PUSH: Arithmetic subtract 1 on `sp`
 
     pc = pc + 1;
     if(c == fl[0]) {
