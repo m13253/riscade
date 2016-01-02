@@ -292,19 +292,19 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         status.memory[status.pointer] = cond | 0b0010000
     elif inst == 'swp':
         check_argc(inst, 1)
-        r = parse_reg4(inst, tokens[2])
+        r = parse_reg4(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b0010000 | r
     elif inst == 'tsz':
         status.memory[status.pointer] = cond | 0b0100000
     elif inst == 'cpf':
         check_argc(inst, 1)
-        r = parse_reg4(inst, tokens[2])
+        r = parse_reg4(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b0100000 | r
     elif inst == 'tss':
         status.memory[status.pointer] = cond | 0b0110000
     elif inst == 'cpt':
         check_argc(inst, 1)
-        r = parse_reg4(inst, tokens[2])
+        r = parse_reg4(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b0110000 | r
     elif inst == 'tsi':
         check_argc(inst, 0)
