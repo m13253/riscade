@@ -22,7 +22,7 @@ Riscade contains at most 16 8-bit registers, they are:
 
 They are encoded into 4-bit binary. So `r0` is `0000` and `pc` is `1111`.
 
-When the system is powered on, all registers except `s2` is set to 0, while `s2` is set to `0xff`.
+When the system is powered on, all registers except `s2` are set to 0, while `s2` is set to `0xff`.
 
 ## Memory
 
@@ -160,16 +160,14 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
     }
 
 
-### `ca01000a`. TSP: Test `a`'s LSB
+### `c0010000`. TSP: Test `r0`'s LSB
 
     pc = pc + 1;
     if(c == fl[0]) {
-        fl[0] = a[0];
+        fl[0] = r0[0];
     }
 
-Note: `a` can only be `r0` or `r1`.
-
-### `ca01rrrr`. SWP: Swap register between `a` and `rrrr`
+### `c001rrrr`. SWP: Swap register between `r0` and `rrrr`
 
     assert(rrrr != a);
     pc = pc + 1;
@@ -179,45 +177,37 @@ Note: `a` can only be `r0` or `r1`.
         rrrr = tmp;
     }
 
-Note: `a` can only be `r0` or `r1`.
-
-### `ca10000a`. TSZ: Test `a` is not zero
+### `c0100000`. TSZ: Test `r0` is not zero
 
     pc = pc + 1;
     if(c == fl[0]) {
-        fl[0] = a != 0;
+        fl[0] = r0 != 0;
     }
 
-Note: `a` can only be `r0` or `r1`.
-
-### `ca10rrrr`. CPF: Copy register from `rrrr` to `a`
+### `c010rrrr`. CPF: Copy register from `rrrr` to `r0`
 
     assert(rrrr != a);
     pc = pc + 1;
     if(c == fl[0]) {
-        a = rrrr;
+        r0 = rrrr;
     }
 
-Note: `a` can only be `r0` or `r1`.
-
-### `ca11000a`. TSS: Test `a`'s MSB
+### `ca11000a`. TSS: Test `r0`'s MSB
 
     pc = pc + 1;
     if(c == fl[0]) {
         fl[0] = a[7];
     }
 
-Note: `a` can only be `r0` or `r1`.
-
-### `ca11rrrr`. CPT: Copy register from `a` to `rrrr`
+### `c011rrrr`. CPT: Copy register from `r0` to `rrrr`
 
     assert(rrrr != a);
     pc = pc + 1;
     if(c == fl[0]) {
-        rrrr = a;
+        rrrr = 0;
     }
 
-Note: `a` can only be `r0` or `r1`.
+##E `x1000xxx`: Undefined yet
 
 ### `c1001000`. TSI: Test `fl[7:4]` is not 0
 
@@ -251,25 +241,6 @@ Note: `s` can only be `s0` or `s1`.
     }
 
 Note: `s` can only be `s0` or `s1`.
-
-### `c1001110`: LJMP: Long jump
-
-    pc = pc + 1;
-    if(c == fl[0]) {
-        tmp = r0;
-        r0 = pc;
-        pc = tmp;
-        tmp = s0;
-        s0 = s2;
-        s2 = tmp;
-    }
-
-### `c1001111`: IRET: Return from interrupt handler
-
-    pc = *(s1 << 8 | sp);
-    sp = sp + 1;
-    s0 = *(s1 << 8 | sp);
-    sp = sp + 1;
 
 ### `c1010000`. CLR: Set `r0` to zero
 
@@ -380,19 +351,38 @@ Note: `s` can only be `s0` or `s1`.
         r0 = r0 - 1;
     }
 
-### `c1011110`: POP: Arithmetic add 1 on `sp`
+### `c1011100`: POP: Arithmetic add 1 on `sp`
 
     pc = pc + 1;
     if(c == fl[0]) {
         sp = sp + 1;
     }
 
-### `c1011111`: PUSH: Arithmetic add 1 on `sp`
+### `c1011101`: PUSH: Arithmetic add 1 on `sp`
 
     pc = pc + 1;
     if(c == fl[0]) {
         sp = sp - 1;
     }
+
+### `c1011110`: LJMP: Long jump
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        tmp = r0;
+        r0 = pc;
+        pc = tmp;
+        tmp = s0;
+        s0 = s2;
+        s2 = tmp;
+    }
+
+### `c1011111`: IRET: Return from interrupt handler
+
+    pc = *(s1 << 8 | sp);
+    sp = sp + 1;
+    s0 = *(s1 << 8 | sp);
+    sp = sp + 1;
 
 ### `c110nnnn`. IML: Load a immediate number
 

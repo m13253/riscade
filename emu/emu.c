@@ -11,7 +11,7 @@ static const uint8_t s2 = 14;
 static const uint8_t pc = 15;
 
 static void print_debug(const uint8_t memory[0x10000], const uint8_t registers[16]) {
-    fprintf(stderr, "\nr0:%02x r1:%02x r2:%02x r3:%02x r4:%02x r5:%02x r6:%02x r7:%02x r8:%02x r9:%92x fl:%02x sp:%02x s0:%02x s1:%02x s2:%02x pc%02x\n\n", registers[0], registers[1], registers[2], registers[3], registers[4], registers[5], registers[6], registers[7], registers[8], registers[9], registers[fl], registers[sp], registers[s0], registers[s1], registers[s2], registers[pc]);
+    fprintf(stderr, "\nr0:%02x r1:%02x r2:%02x r3:%02x r4:%02x r5:%02x r6:%02x r7:%02x\nr8:%02x r9:%02x fl:%02x sp:%02x s0:%02x s1:%02x s2:%02x pc:%02x\n\n", registers[0], registers[1], registers[2], registers[3], registers[4], registers[5], registers[6], registers[7], registers[8], registers[9], registers[fl], registers[sp], registers[s0], registers[s1], registers[s2], registers[pc]);
 }
 
 static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
@@ -82,6 +82,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
                     registers[0] <<= shift;
                 }
             } else {
+                print_debug();
                 abort();
             }
         // SHR1
@@ -93,6 +94,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
             if(registers[1] > 0 && registers[1] < 8) {
                 registers[0] = registers[0] >> registers[1] | registers[0] << (8-registers[1]);
             } else {
+                print_debug();
                 abort();
             }
         // ROR1
@@ -122,58 +124,32 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
         // STF 3
         } else if(inst == 0x0f) {
             registers[fl] |= 0x8;
-        // TSP r0
+        // TSP
         } else if(inst == 0x10) {
             registers[fl] &= 0xfe;
             registers[fl] |= registers[0] & 1;
-        // TSP r1
-        } else if(inst == 0x51) {
-            registers[fl] &= 0xfe;
-            registers[fl] |= registers[1] & 1;
-        // SWP r0
+        // SWP
         } else if(inst >= 0x10 && inst <= 0x1f) {
             uint8_t tmp = registers[0];
             registers[0] = registers[inst & 0xf];
             registers[inst & 0xf] = tmp;
-        // SWP r1
-        } else if(inst >= 0x50 && inst <= 0x5f) {
-            uint8_t tmp = registers[1];
-            registers[1] = registers[inst & 0xf];
-            registers[inst & 0xf] = tmp;
-        // TSZ r0
+        // TSZ
         } else if(inst == 0x20) {
             if(registers[0]) {
                 registers[fl] |= 0x1;
             } else {
                 registers[fl] &= 0xfe;
             }
-        // TSZ r1
-        } else if(inst == 0x61) {
-            if(registers[1]) {
-                registers[fl] |= 0x1;
-            } else {
-                registers[fl] &= 0xfe;
-            }
-        // CPF r0
+        // CPF
         } else if(inst >= 0x20 && inst <= 0x2f) {
             registers[0] = registers[inst & 0xf];
-        // CPF r1
-        } else if(inst >= 0x60 && inst <= 0x6f) {
-            registers[1] = registers[inst & 0xf];
-        // TSS r0
+        // TSS
         } else if(inst == 0x30) {
             registers[fl] &= 0xfe;
             registers[fl] |= registers[0] >> 7;
-        // TSS r1
-        } else if(inst == 0x71) {
-            registers[fl] &= 0xfe;
-            registers[fl] |= registers[1] >> 7;
-        // CPT r0
+        // CPT
         } else if(inst >= 0x30 && inst <= 0x3f) {
             registers[inst & 0xf] = registers[0];
-        // CPT r1
-        } else if(inst >= 0x70 && inst <= 0x7f) {
-            registers[inst & 0xf] = registers[1];
         // TSI
         } else if(inst == 0x48) {
             if(fl & 0xf0) {
@@ -214,18 +190,6 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
         // ST  s1
         } else if(inst == 0x4d) {
             memory[registers[s1] << 8 | registers[1]] = registers[0];
-        // LJMP
-        } else if(inst == 0x4e) {
-            uint8_t tmp0 = registers[0];
-            registers[0] = registers[pc];
-            registers[pc] = tmp0;
-            uint8_t tmp1 = registers[s0];
-            registers[s0] = registers[s2];
-            registers[s2] = tmp1;
-        // IRET
-        } else if(inst == 0x4f) {
-            registers[pc] = memory[registers[s1] << 8 | registers[sp]++];
-            registers[s0] = memory[registers[s1] << 8 | registers[sp]++];
         // CLR
         } else if(inst == 0x50) {
             registers[0] = 0;
@@ -298,11 +262,23 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
             }
             registers[0]--;
         // PUSH
-        } else if(inst == 0x5e) {
+        } else if(inst == 0x5c) {
             registers[sp]--;
         // POP
-        } else if(inst == 0x5f) {
+        } else if(inst == 0x5d) {
             registers[sp]++;
+        // LJMP
+        } else if(inst == 0x5e) {
+            uint8_t tmp0 = registers[0];
+            registers[0] = registers[pc];
+            registers[pc] = tmp0;
+            uint8_t tmp1 = registers[s0];
+            registers[s0] = registers[s2];
+            registers[s2] = tmp1;
+        // IRET
+        } else if(inst == 0x5f) {
+            registers[pc] = memory[registers[s1] << 8 | registers[sp]++];
+            registers[s0] = memory[registers[s1] << 8 | registers[sp]++];
         // IML
         } else if(inst >= 0x60 && inst <= 0x6f) {
             registers[0] = (registers[0] & 0xf0) | (inst & 0x0f);
@@ -310,6 +286,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
         } else if(inst >= 0x70 && inst <= 0x7f) {
             registers[0] = (registers[0] & 0xf0) | (inst & 0x0f) << 4;
         } else {
+            print_debug();
             abort();
         }
     }

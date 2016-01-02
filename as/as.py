@@ -197,7 +197,7 @@ def try_directive(tokens: [Token], status: AsmStatus) -> bool:
                 status.memory[status.pointer] = byte_val
                 status.pointer += 1
         else:
-            log_error(status.lineno, col, "Invalid directive '%s'" % directive)
+            log_error(status.lineno, tokens[0].col, "Invalid directive '%s'" % directive)
         return True
     return False
 
@@ -217,21 +217,15 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
 
     def parse_reg1(inst, token):
         try:
-            return {'r0': 0, 'r1': 1}[token.token]
+            return {'s0': 0, 's1': 1}[token.token]
         except KeyError:
-            log_error(status.lineno, token.col, "The first argument of '%s' can only be 'r0' or 'r1'" % inst)
+            log_error(status.lineno, token.col, "The argument of '%s' can only be 's0' or 's1'" % inst)
 
     def parse_reg4(inst, token):
         try:
             return {'r0': 0, 'r1': 1, 'r2': 2, 'r3': 3, 'r4': 4, 'r5': 5, 'r6': 6, 'r7': 7, 'r8': 8, 'r9': 9, 'fl': 10, 'sp': 11, 's0': 12, 's1': 13, 's2': 14, 'pc': 15}[token.token]
         except KeyError:
-            log_error(status.lineno, token.col, "The second argument of '%s' must be a valid register" % inst)
-
-    def parse_regs(inst, token):
-        try:
-            return {'s0': 0, 's1': 1}[token.token]
-        except KeyError:
-            log_error(status.lineno, token.col, "The first argument of '%s' can only be 's0' or 's1'" % inst)
+            log_error(status.lineno, token.col, "The argument of '%s' must be a valid register" % inst)
 
     def parse_flag(inst, token):
         try:
@@ -295,31 +289,23 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         status.memory[status.pointer] = cond | 0b0001100 | f
     elif inst == 'tsp':
         check_argc(inst, 1)
-        a = parse_reg1(inst, tokens[1])
-        status.memory[status.pointer] = cond | 0b0010000 | a << 6 | a
+        status.memory[status.pointer] = cond | 0b0010000
     elif inst == 'swp':
-        check_argc(inst, 2)
-        a = parse_reg1(inst, tokens[1])
+        check_argc(inst, 1)
         r = parse_reg4(inst, tokens[2])
-        status.memory[status.pointer] = cond | 0b0010000 | a << 6 | r
+        status.memory[status.pointer] = cond | 0b0010000 | r
     elif inst == 'tsz':
-        check_argc(inst, 1)
-        a = parse_reg1(inst, tokens[1])
-        status.memory[status.pointer] = cond | 0b0100000 | a << 6 | a
+        status.memory[status.pointer] = cond | 0b0100000
     elif inst == 'cpf':
-        check_argc(inst, 2)
-        a = parse_reg1(inst, tokens[1])
-        r = parse_reg4(inst, tokens[2])
-        status.memory[status.pointer] = cond | 0b0100000 | a << 6 | r
-    elif inst == 'tss':
         check_argc(inst, 1)
-        a = parse_reg1(inst, tokens[1])
-        status.memory[status.pointer] = cond | 0b0110000 | a << 6 | a
-    elif inst == 'cpt':
-        check_argc(inst, 2)
-        a = parse_reg1(inst, tokens[1])
         r = parse_reg4(inst, tokens[2])
-        status.memory[status.pointer] = cond | 0b0110000 | a << 6 | r
+        status.memory[status.pointer] = cond | 0b0100000 | r
+    elif inst == 'tss':
+        status.memory[status.pointer] = cond | 0b0110000
+    elif inst == 'cpt':
+        check_argc(inst, 1)
+        r = parse_reg4(inst, tokens[2])
+        status.memory[status.pointer] = cond | 0b0110000 | r
     elif inst == 'tsi':
         check_argc(inst, 0)
         status.memory[status.pointer] = cond | 0b1001000 
@@ -329,18 +315,12 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         status.memory[status.pointer] = cond | 0b1001000 | f
     elif inst == 'ld':
         check_argc(inst, 1)
-        s = parse_regs(inst, tokens[1])
+        s = parse_reg1(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b1001100 | s << 4
     elif inst == 'st':
         check_argc(inst, 1)
-        s = parse_regs(inst, tokens[1])
+        s = parse_reg1(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b1001101 | s << 4
-    elif inst == 'ljmp':
-        check_argc(inst, 0)
-        status.memory[status.pointer] = cond | 0b1001110
-    elif inst == 'iret':
-        check_argc(inst, 0)
-        status.memory[status.pointer] = cond | 0b1001111
     elif inst == 'clr':
         check_argc(inst, 0)
         status.memory[status.pointer] = cond | 0b1010000
@@ -379,8 +359,14 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         status.memory[status.pointer] = cond | 0b1011011
     elif inst == 'pop':
         check_argc(inst, 0)
-        status.memory[status.pointer] = cond | 0b1011110
+        status.memory[status.pointer] = cond | 0b1011100
     elif inst == 'push':
+        check_argc(inst, 0)
+        status.memory[status.pointer] = cond | 0b1011101
+    elif inst == 'ljmp':
+        check_argc(inst, 0)
+        status.memory[status.pointer] = cond | 0b1011110
+    elif inst == 'iret':
         check_argc(inst, 0)
         status.memory[status.pointer] = cond | 0b1011111
     elif inst == 'iml':
@@ -448,7 +434,6 @@ def main():
         tokens = list(parse_token(line, status.lineno))
         while try_label(tokens, status):
             pass
-        print(tokens)
         if tokens:
             if try_directive(tokens, status):
                 continue
