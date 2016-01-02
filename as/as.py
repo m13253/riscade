@@ -164,7 +164,7 @@ def try_label(tokens: [Token], status: AsmStatus) -> bool:
         symbol = tokens[0].token
         if symbol not in status.symtable:
             status.symtable[symbol] = status.pointer
-        del tokens[0:1]
+        del tokens[0:2]
         return True
     return False
 
@@ -337,80 +337,96 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         status.memory[status.pointer] = cond | 0b1001101 | s << 4
     elif inst == 'ljmp':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1001110
+        status.memory[status.pointer] = cond | 0b1001110
     elif inst == 'iret':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1001111
+        status.memory[status.pointer] = cond | 0b1001111
     elif inst == 'clr':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010000
+        status.memory[status.pointer] = cond | 0b1010000
     elif inst == 'not':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010001
+        status.memory[status.pointer] = cond | 0b1010001
     elif inst == 'and':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010010
+        status.memory[status.pointer] = cond | 0b1010010
     elif inst == 'or':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010011
+        status.memory[status.pointer] = cond | 0b1010011
     elif inst == 'xor':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010100
+        status.memory[status.pointer] = cond | 0b1010100
     elif inst == 'dbg':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010101
+        status.memory[status.pointer] = cond | 0b1010101
     elif inst == 'add':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010110
+        status.memory[status.pointer] = cond | 0b1010110
     elif inst == 'sub':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1010111
+        status.memory[status.pointer] = cond | 0b1010111
     elif inst == 'mul':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1011000
+        status.memory[status.pointer] = cond | 0b1011000
     elif inst == 'div':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1011001
+        status.memory[status.pointer] = cond | 0b1011001
     elif inst == 'inc':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1011010
+        status.memory[status.pointer] = cond | 0b1011010
     elif inst == 'dec':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1011011
+        status.memory[status.pointer] = cond | 0b1011011
     elif inst == 'pop':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1011110
+        status.memory[status.pointer] = cond | 0b1011110
     elif inst == 'push':
         check_argc(inst, 0)
-        status.memory[status.pointer] = 0b1011111
+        status.memory[status.pointer] = cond | 0b1011111
     elif inst == 'iml':
-        if len(tokens) <= 2:
+        m = 0
+        if len(tokens) <= 1:
             log_error(status.lineno, tokens[0].col, "Instruction '%s' requires 1 arguments" % inst)
-        elif len(tokens) == 2 and tokens[1].ttype == Token.Type.Ident:
-            status.reloc.append((status.lineno, tokens[1].col, memory.pointer, tokens[1].token, 0))
-        elif len(tokens) == 4 and (tokens[1].ttype, tokens[2].token, tokens[3].ttype) == (Token.Type.Ident, '.', Token.Type.Ident):
+        elif len(tokens) == 2 and tokens[1].ttype == Token.Type.number:
+            try:
+                m = int(tokens[1].token, 0)
+                if not (0 <= m <= 15):
+                    raise ValueError()
+            except ValueError:
+                log_error(status.lineno, tokens[1].col, "The argument of '%s' must be a number between 0 and 15" % tokens[1].token)
+        elif len(tokens) == 2 and tokens[1].ttype == Token.Type.ident:
+            status.reloc.append((status.lineno, tokens[1].col, status.pointer, tokens[1].token, 0))
+        elif len(tokens) == 4 and (tokens[1].ttype, tokens[2].token, tokens[3].ttype) == (Token.Type.ident, '.', Token.Type.ident):
             try:
                 shift = {'low': 0, 'high': 4, 'seg': 8, 'seglow': 8, 'seghigh': 12}[tokens[3].token]
             except KeyError:
                 log_error(status.lineno, tokens[1].col, "The suffix of '%s' can only be 'low', 'high', 'seg', 'seglow', 'seghigh'" % tokens[1].token)
-            status.reloc.append((status.lineno, tokens[1].col, memory.pointer, tokens[1].token, shift))
+            status.reloc.append((status.lineno, tokens[1].col, status.pointer, tokens[1].token, shift))
         else:
-            log_error(status.lineno, tokens[1].col, "The argument of '%s' must be a valid identifier, either with or without a suffix" % inst)
-        status.memory[status.pointer] = 0b1110000
+            log_error(status.lineno, tokens[1].col, "The argument of '%s' must be a number, or a valid identifier, either with or without a suffix" % inst)
+        status.memory[status.pointer] = cond | 0b1100000 | m
     elif inst == 'imh':
-        if len(tokens) <= 2:
+        m = 0
+        if len(tokens) <= 1:
             log_error(status.lineno, tokens[0].col, "Instruction '%s' requires 1 arguments" % inst)
-        elif len(tokens) == 2 and tokens[1].ttype == Token.Type.Ident:
-            status.reloc.append((status.lineno, tokens[1].col, memory.pointer, tokens[1].token, 4))
-        elif len(tokens) == 4 and (tokens[1].ttype, tokens[2].token, tokens[3].ttype) == (Token.Type.Ident, '.', Token.Type.Ident):
+        elif len(tokens) == 2 and tokens[1].ttype == Token.Type.number:
+            try:
+                m = int(tokens[1].token, 0)
+                if not (0 <= m <= 15):
+                    raise ValueError()
+            except ValueError:
+                log_error(status.lineno, tokens[1].col, "The argument of '%s' must be a number between 0 and 15" % tokens[1].token)
+        elif len(tokens) == 2 and tokens[1].ttype == Token.Type.ident:
+            status.reloc.append((status.lineno, tokens[1].col, status.pointer, tokens[1].token, 4))
+        elif len(tokens) == 4 and (tokens[1].ttype, tokens[2].token, tokens[3].ttype) == (Token.Type.ident, '.', Token.Type.ident):
             try:
                 shift = {'low': 0, 'high': 4, 'seg': 12, 'seglow': 8, 'seghigh': 12}[tokens[3].token]
             except KeyError:
                 log_error(status.lineno, tokens[1].col, "The suffix of '%s' can only be 'low', 'high', 'seg', 'seglow', 'seghigh'" % tokens[1].token)
-            status.reloc.append((status.lineno, tokens[1].col, memory.pointer, tokens[1].token, shift))
+            status.reloc.append((status.lineno, tokens[1].col, status.pointer, tokens[1].token, shift))
         else:
-            log_error(status.lineno, tokens[1].col, "The argument of '%s' must be a valid identifier, either with or without a suffix" % inst)
-        status.memory[status.pointer] = 0b1110000
+            log_error(status.lineno, tokens[1].col, "The argument of '%s' must be a number, or a valid identifier, either with or without a suffix" % inst)
+        status.memory[status.pointer] = cond | 0b1110000 | m
     else:
         return False
     status.pointer += 1
@@ -432,6 +448,7 @@ def main():
         tokens = list(parse_token(line, status.lineno))
         while try_label(tokens, status):
             pass
+        print(tokens)
         if tokens:
             if try_directive(tokens, status):
                 continue
