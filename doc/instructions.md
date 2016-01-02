@@ -281,9 +281,7 @@ Note: `s` can only be `s0` or `s1`.
 
     pc = pc + 1;
     if(c == fl[0]) {
-    #ifdef NDEBUG
-        reboot();
-    #else
+    #ifndef NDEBUG
         trigger_breakpoint();
     #endif
     }
