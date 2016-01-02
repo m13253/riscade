@@ -306,7 +306,7 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         check_argc(inst, 1)
         a = parse_reg1(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b0100000 | a << 6 | a
-    elif inst == 'cpt':
+    elif inst == 'cpf':
         check_argc(inst, 2)
         a = parse_reg1(inst, tokens[1])
         r = parse_reg4(inst, tokens[2])
@@ -315,7 +315,7 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         check_argc(inst, 1)
         a = parse_reg1(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b0110000 | a << 6 | a
-    elif inst == 'cpf':
+    elif inst == 'cpt':
         check_argc(inst, 2)
         a = parse_reg1(inst, tokens[1])
         r = parse_reg4(inst, tokens[2])

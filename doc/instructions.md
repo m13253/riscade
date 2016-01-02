@@ -190,7 +190,7 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### `ca10rrrr`. CPT: Copy register from `rrrr` to `a`
+### `ca10rrrr`. CPF: Copy register from `rrrr` to `a`
 
     assert(rrrr != a);
     pc = pc + 1;
@@ -209,7 +209,7 @@ Note: `a` can only be `r0` or `r1`.
 
 Note: `a` can only be `r0` or `r1`.
 
-### `ca11rrrr`. CPF: Copy register from `a` to `rrrr`
+### `ca11rrrr`. CPT: Copy register from `a` to `rrrr`
 
     assert(rrrr != a);
     pc = pc + 1;
@@ -260,8 +260,8 @@ Note: `s` can only be `s0` or `s1`.
         r0 = pc;
         pc = tmp;
         tmp = s0;
-        s0 = s3;
-        s3 = tmp;
+        s0 = s2;
+        s2 = tmp;
     }
 
 ### `c1001111`: IRET: Return from interrupt handler
@@ -384,7 +384,6 @@ Note: `s` can only be `s0` or `s1`.
 
     pc = pc + 1;
     if(c == fl[0]) {
-        fl[1] = r0 == 0xff;
         sp = sp + 1;
     }
 
@@ -392,7 +391,6 @@ Note: `s` can only be `s0` or `s1`.
 
     pc = pc + 1;
     if(c == fl[0]) {
-        fl[1] = r0 == 0x00;
         sp = sp - 1;
     }
 
