@@ -156,6 +156,18 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
         // CPT
         } else if(inst >= 0x30 && inst <= 0x3f) {
             registers[inst & 0xf] = registers[0];
+        // LD s0
+        } else if(inst == 0x44) {
+            registers[0] = memory[registers[s0] << 8 | registers[1]];
+        // LD s1
+        } else if(inst == 0x46) {
+            registers[0] = memory[registers[s1] << 8 | registers[1]];
+        // ST  s0
+        } else if(inst == 0x45) {
+            memory[registers[s0] << 8 | registers[1]] = registers[0];
+        // ST  s1
+        } else if(inst == 0x47) {
+            memory[registers[s1] << 8 | registers[1]] = registers[0];
         // TSI
         } else if(inst == 0x48) {
             if(fl & 0xf0) {
@@ -184,18 +196,12 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
             } else {
                 registers[fl] &= 0xfe;
             }
-        // LD s0
+        // LDS
         } else if(inst == 0x4c) {
-            registers[0] = memory[registers[s0] << 8 | registers[1]];
-        // LD s1
-        } else if(inst == 0x5c) {
-            registers[0] = memory[registers[s1] << 8 | registers[1]];
-        // ST  s0
+            registers[0] = memory[registers[s1] << 8 | registers[sp]];
+        // STS
         } else if(inst == 0x4d) {
-            memory[registers[s0] << 8 | registers[1]] = registers[0];
-        // ST  s1
-        } else if(inst == 0x4d) {
-            memory[registers[s1] << 8 | registers[1]] = registers[0];
+            memory[registers[s1] << 8 | registers[sp]] = registers[0];
         // CLR
         } else if(inst == 0x50) {
             registers[0] = 0;

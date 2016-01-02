@@ -310,6 +310,14 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         check_argc(inst, 1)
         r = parse_reg4(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b0110000 | r
+    elif inst == 'ld':
+        check_argc(inst, 1)
+        s = parse_reg1(inst, tokens[1])
+        status.memory[status.pointer] = cond | 0b1000100 | s << 1
+    elif inst == 'st':
+        check_argc(inst, 1)
+        s = parse_reg1(inst, tokens[1])
+        status.memory[status.pointer] = cond | 0b1000101 | s << 1
     elif inst == 'tsi':
         check_argc(inst, 0)
         status.memory[status.pointer] = cond | 0b1001000
@@ -317,14 +325,12 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
         check_argc(inst, 1)
         f = parse_flag(inst, tokens[1])
         status.memory[status.pointer] = cond | 0b1001000 | f
-    elif inst == 'ld':
-        check_argc(inst, 1)
-        s = parse_reg1(inst, tokens[1])
-        status.memory[status.pointer] = cond | 0b1001100 | s << 4
-    elif inst == 'st':
-        check_argc(inst, 1)
-        s = parse_reg1(inst, tokens[1])
-        status.memory[status.pointer] = cond | 0b1001101 | s << 4
+    elif inst == 'lds':
+        check_argc(inst, 0)
+        status.memory[status.pointer] = cond | 0b1001100
+    elif inst == 'sts':
+        check_argc(inst, 0)
+        status.memory[status.pointer] = cond | 0b1001101
     elif inst == 'clr':
         check_argc(inst, 0)
         status.memory[status.pointer] = cond | 0b1010000

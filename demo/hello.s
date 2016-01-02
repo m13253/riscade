@@ -1,4 +1,8 @@
-	.org 0xff00
+; This program is a part of Riscade project.
+; Licensed under MIT License.
+; See https://github.com/m13253/riscade/blob/master/COPYING for licensing information.
+
+	.org	0xff00
 
 	; s0 = str.seg
 	iml	str.seg

@@ -192,11 +192,11 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
         r0 = rrrr;
     }
 
-### `ca11000a`. TSS: Test `r0`'s MSB
+### `c0110000`. TSS: Test `r0`'s MSB
 
     pc = pc + 1;
     if(c == fl[0]) {
-        fl[0] = a[7];
+        fl[0] = r0[7];
     }
 
 ### `c011rrrr`. CPT: Copy register from `r0` to `rrrr`
@@ -207,7 +207,25 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
         rrrr = 0;
     }
 
-### `x1000xxx`: Undefined yet
+### `x10000xx`: Undefined yet
+
+### `c10001s0`. LD: Read a byte from RAM
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        r0 = *(s << 8 | r1);
+    }
+
+Note: `s` can only be `s0` or `s1`.
+
+### `c10001s1`. ST: Write a byte to RAM
+
+    pc = pc + 1;
+    if(c == fl[0]) {
+        *(s << 8 | r1) = r0;
+    }
+
+Note: `s` can only be `s0` or `s1`.
 
 ### `c1001000`. TSI: Test `fl[7:4]` is not 0
 
@@ -224,23 +242,21 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
         fl[0] = fl[ff];
     }
 
-### `c10s1100`. LD: Read a byte from RAM
+### `c1001100`. LDS: Read a byte from stack
 
     pc = pc + 1;
     if(c == fl[0]) {
-        r0 = *(s0 << 8 | r1);
+        r0 = *(s0 << 8 | sp);
     }
 
-Note: `s` can only be `s0` or `s1`.
-
-### `c10s1101`. ST: Write a byte to RAM
+### `c1001101`. STS: Write a byte to stack
 
     pc = pc + 1;
     if(c == fl[0]) {
-        *(s0 << 8 | r1) = r0;
+        *(s0 << 8 | sp) = r0;
     }
 
-Note: `s` can only be `s0` or `s1`.
+### `x100111x`: Undefined yet
 
 ### `c1010000`. CLR: Set `r0` to zero
 
