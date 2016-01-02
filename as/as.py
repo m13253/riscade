@@ -227,9 +227,9 @@ def try_instruction(tokens: [Token], status: AsmStatus) -> bool:
 
     def parse_reg4(inst, token):
         try:
-            return {'r0': 0, 'r1': 1, 'r2': 2, 'r3': 3, 'r4': 4, 'r5': 5, 'r6': 6, 'r7': 7, 'r8': 8, 'r9': 9, 'fl': 10, 'sp': 11, 's0': 12, 's1': 13, 's2': 14, 'pc': 15}[token.token]
+            return {'r1': 1, 'r2': 2, 'r3': 3, 'r4': 4, 'r5': 5, 'r6': 6, 'r7': 7, 'r8': 8, 'r9': 9, 'fl': 10, 'sp': 11, 's0': 12, 's1': 13, 's2': 14, 'pc': 15}[token.token]
         except KeyError:
-            log_error(status.lineno, token.col, "The argument of '%s' must be a valid register" % inst)
+            log_error(status.lineno, token.col, "The argument of '%s' must be a valid register except 'r0'" % inst)
 
     def parse_flag(inst, token):
         try:
