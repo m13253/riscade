@@ -27,6 +27,10 @@ For example, run `hello.rom`
 
 There are some demo programs to play with, in `demo` directory.
 
+## Bug report
+
+There are likely to be bugs, either in documentation, assembler, emulator, or in demo programs. Feel free to submit a [GitHub issue](https://github.com/m13253/riscade/issues) so that I can fix it.
+
 # License
 
 This document is licensed under [MIT License](https://github.com/m13253/riscade/blob/master/COPYING)
