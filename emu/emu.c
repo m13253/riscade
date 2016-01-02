@@ -1,3 +1,9 @@
+/*
+  This program is a part of Riscade project.
+  Licensed under MIT License.
+  See https://github.com/m13253/riscade/blob/master/COPYING for licensing information.
+*/
+
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>

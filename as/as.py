@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# This program is a part of Riscade project.
+# Licensed under MIT License.
+# See https://github.com/m13253/riscade/blob/master/COPYING for licensing information.
+
 import enum
 import logging
 import sys
