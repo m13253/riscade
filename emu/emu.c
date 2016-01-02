@@ -3,14 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const uint8_t fl = 10;
-const uint8_t sp = 11;
-const uint8_t s0 = 12;
-const uint8_t s1 = 13;
-const uint8_t s2 = 14;
-const uint8_t pc = 15;
+static const uint8_t fl = 10;
+static const uint8_t sp = 11;
+static const uint8_t s0 = 12;
+static const uint8_t s1 = 13;
+static const uint8_t s2 = 14;
+static const uint8_t pc = 15;
 
-void emulate(uint8_t *memory, uint8_t registers[]) {
+static void print_debug(const uint8_t memory[0x10000], const uint8_t registers[16]) {
+    fprintf(stderr, "\nr0:%02x r1:%02x r2:%02x r3:%02x r4:%02x r5:%02x r6:%02x r7:%02x r8:%02x r9:%92x fl:%02x sp:%02x s0:%02x s1:%02x s2:%02x pc%02x\n\n", registers[0], registers[1], registers[2], registers[3], registers[4], registers[5], registers[6], registers[7], registers[8], registers[9], registers[fl], registers[sp], registers[s0], registers[s1], registers[s2], registers[pc]);
+}
+
+static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
     for(;;) {
         uint8_t inst = memory[registers[s2] << 8 | registers[pc]];
         registers[pc]++;
@@ -239,7 +243,7 @@ void emulate(uint8_t *memory, uint8_t registers[]) {
             registers[0] ^= registers[1];
         // DBG
         } else if(inst == 0x55) {
-            abort();
+            print_debug(memory, registers);
         // ADD
         } else if(inst == 0x56) {
             if(registers[0] + registers[1] >= 0xff) {
@@ -322,7 +326,7 @@ int main(int argc, char *argv[]) {
         perror("Error opening ROM file");
         return err;
     }
-    void *memory = calloc(0x10000, 1);
+    uint8_t *memory = calloc(0x10000, 1);
     if(!memory) {
         int err = errno;
         perror("Error allocating memory");
