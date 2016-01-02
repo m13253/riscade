@@ -284,7 +284,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
             registers[0] = (registers[0] & 0xf0) | (inst & 0x0f);
         // IMH
         } else if(inst >= 0x70 && inst <= 0x7f) {
-            registers[0] = (registers[0] & 0xf0) | (inst & 0x0f) << 4;
+            registers[0] = (registers[0] & 0x0f) | (inst & 0x0f) << 4;
         } else {
             print_debug(memory, registers);
             abort();
