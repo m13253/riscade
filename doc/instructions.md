@@ -92,11 +92,11 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
                 r0 = r0 >> r1;
             }
         } else if(r1 > -8 && r1 < 0) {
-            fl[1] = r0[8-r1];
+            fl[1] = r0[8-(-r1)];
             if(fl[3]) {
-                r0 = ~(~r0 << r1);
+                r0 = ~(~r0 << -r1);
             } else {
-                r0 = r0 << r1;
+                r0 = r0 << -r1;
             }
         } else {
             undefined;
@@ -116,7 +116,7 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
     pc = pc + 1;
     if(c == fl[0]) {
         if(r1 > 0 && r1 < 8) {
-            r0 = r0 >> r1 || r0 << (8-r1);
+            r0 = r0 >> r1 | r0 << (8-r1);
         } else {
             undefined;
         }
@@ -126,7 +126,7 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
 
     pc = pc + 1;
     if(c == fl[0]) {
-        r0 = r0 >> 1 || r0 << 7;
+        r0 = r0 >> 1 | r0 << 7;
     }
 
 ### `c0001000`. CLI: Set `fl[7:4]` to 0
@@ -171,7 +171,7 @@ Note: `a` can only be `r0` or `r1`.
 
 ### `ca01rrrr`. SWP: Swap register between `a` and `rrrr`
 
-    assert(rrrr = 0);
+    assert(rrrr != a);
     pc = pc + 1;
     if(c == fl[0]) {
         tmp = a;
@@ -192,7 +192,7 @@ Note: `a` can only be `r0` or `r1`.
 
 ### `ca10rrrr`. CPT: Copy register from `rrrr` to `a`
 
-    assert(rrrr = 0);
+    assert(rrrr != a);
     pc = pc + 1;
     if(c == fl[0]) {
         a = rrrr;
@@ -211,7 +211,7 @@ Note: `a` can only be `r0` or `r1`.
 
 ### `ca11rrrr`. CPF: Copy register from `a` to `rrrr`
 
-    assert(rrrr = 0);
+    assert(rrrr != a);
     pc = pc + 1;
     if(c == fl[0]) {
         rrrr = a;
