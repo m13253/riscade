@@ -377,10 +377,14 @@ Note: `s` can only be `s0` or `s1`.
 
 ### `c1011111`: IRET: Return from interrupt handler
 
-    pc = *(s1 << 8 | sp);
-    sp = sp + 1;
-    s0 = *(s1 << 8 | sp);
-    sp = sp + 1;
+    pc = pc + 1;
+    if(c == fl[0]) {
+        pc = *(s1 << 8 | sp);
+        sp = sp + 1;
+        s0 = *(s1 << 8 | sp);
+        sp = sp + 1;
+        fl[2] = 1;
+    }
 
 ### `c110nnnn`. IML: Load a immediate number
 
@@ -408,11 +412,12 @@ When interrupt happens and `fl[2]` is 1, an interrupt will fire.
 
 The hardware will automatically:
 
+    fl[2] = 0;
+    fl[7:4] = interrupt_no;
     sp = sp - 1;
     *(s1 << 8 | sp) = s2;
     sp = sp - 1;
     *(s1 << 8 | sp) = pc;
-    fl[7:4] = interrupt_no;
     s2 = 0;
     pc = 0;
 

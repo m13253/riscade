@@ -285,6 +285,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
         } else if(inst == 0x5f) {
             registers[pc] = memory[registers[s1] << 8 | registers[sp]++];
             registers[s0] = memory[registers[s1] << 8 | registers[sp]++];
+            registers[fl] |= 0x4;
         // IML
         } else if(inst >= 0x60 && inst <= 0x6f) {
             registers[0] = (registers[0] & 0xf0) | (inst & 0x0f);
