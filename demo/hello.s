@@ -16,7 +16,7 @@ loop:
 	cpt	r1
 	ld	s0
 
-	; if(r0 == 0) exit();
+	; if(r0 == '\0') exit()
 	tsz
 	hlt
 cond	tce
@@ -28,7 +28,7 @@ cond	tce
 	swp	r1
 	out
 
-	; r2 = r2 + 1;
+	; r2 = r2 + 1
 	cpf	r2
 	inc
 	cpt	r2
