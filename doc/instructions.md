@@ -207,7 +207,7 @@ Each instruction is 8-bit long, the MSB is always condition execution bit. The i
         rrrr = 0;
     }
 
-##E `x1000xxx`: Undefined yet
+### `x1000xxx`: Undefined yet
 
 ### `c1001000`. TSI: Test `fl[7:4]` is not 0
 
