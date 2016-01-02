@@ -82,7 +82,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
                     registers[0] <<= shift;
                 }
             } else {
-                print_debug();
+                print_debug(memory, registers);
                 abort();
             }
         // SHR1
@@ -94,7 +94,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
             if(registers[1] > 0 && registers[1] < 8) {
                 registers[0] = registers[0] >> registers[1] | registers[0] << (8-registers[1]);
             } else {
-                print_debug();
+                print_debug(memory, registers);
                 abort();
             }
         // ROR1
@@ -286,7 +286,7 @@ static void emulate(uint8_t memory[0x10000], uint8_t registers[16]) {
         } else if(inst >= 0x70 && inst <= 0x7f) {
             registers[0] = (registers[0] & 0xf0) | (inst & 0x0f) << 4;
         } else {
-            print_debug();
+            print_debug(memory, registers);
             abort();
         }
     }
