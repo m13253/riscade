@@ -2,7 +2,7 @@
 ; Licensed under MIT License.
 ; See https://github.com/m13253/riscade/blob/master/COPYING for licensing information.
 
-	.org	0x0000
+	.org	0x0100
 number:
 	.byte	0
 
