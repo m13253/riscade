@@ -381,7 +381,7 @@ Note: Unlike x86 assembly, this `POP` does not retrieve anything from the stack.
         sp = sp - 1;
     }
 
-Note: Unlike x86 assembly, this `POP` does not retrieve anything from the stack. You should use `LDS` before `POP`.
+Note: Unlike x86 assembly, this `PUSH` does not store anything to the stack. You should use `STS` after `PUSH`.
 
 ### `c1011110`: LJMP: Long jump
 
@@ -394,8 +394,6 @@ Note: Unlike x86 assembly, this `POP` does not retrieve anything from the stack.
         s0 = s2;
         s2 = tmp;
     }
-
-Note: Unlike x86 assembly, this `PUSH` does not store anything to the stack. You should use `STS` after `PUSH`.
 
 ### `c1011111`: IRET: Return from interrupt handler
 
