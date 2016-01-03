@@ -71,16 +71,16 @@ static int run_inst(uint8_t memory[0x10000], uint8_t registers[16]) {
         int8_t shift = (int8_t) registers[1];
         if(shift > 0 && shift < 8) {
             registers[fl] &= 0xfd;
-            registers[fl] |= (registers[0] >> (shift-2)) & 0x2;
+            registers[fl] |= ((registers[0] >> (shift-1)) & 0x1) << 1;
             if(registers[fl] & 0x8) {
-                registers[0] = ~(~registers[0] >> shift);
+                registers[0] = ~((uint8_t) ~registers[0] >> shift);
             } else {
                 registers[0] >>= shift;
             }
         } else if(shift > -8 && shift < 0) {
             shift = -shift;
             registers[fl] &= 0xfd;
-            registers[fl] |= (registers[0] >> (7-shift)) & 0x2;
+            registers[fl] |= ((registers[0] >> (8-shift)) & 0x1) << 1;
             if(registers[fl] & 0x8) {
                 registers[0] = ~(~registers[0] << shift);
             } else {
@@ -94,6 +94,7 @@ static int run_inst(uint8_t memory[0x10000], uint8_t registers[16]) {
     } else if(inst == 0x05) {
         registers[fl] &= 0xfd;
         registers[fl] |= (registers[0] & 0x1) << 1;
+        registers[0] >>= 1;
     // ROR
     } else if(inst == 0x06) {
         if(registers[1] > 0 && registers[1] < 8) {
