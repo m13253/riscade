@@ -372,12 +372,16 @@ Note: `s` can only be `s0` or `s1`.
         sp = sp + 1;
     }
 
+Note: Unlike x86 assembly, this `POP` does not retrieve anything from the stack. You should use `LDS` before `POP`.
+
 ### `c1011101`: PUSH: Arithmetic subtract 1 on `sp`
 
     pc = pc + 1;
     if(c == fl[0]) {
         sp = sp - 1;
     }
+
+Note: Unlike x86 assembly, this `POP` does not retrieve anything from the stack. You should use `LDS` before `POP`.
 
 ### `c1011110`: LJMP: Long jump
 
@@ -390,6 +394,8 @@ Note: `s` can only be `s0` or `s1`.
         s0 = s2;
         s2 = tmp;
     }
+
+Note: Unlike x86 assembly, this `PUSH` does not store anything to the stack. You should use `STS` after `PUSH`.
 
 ### `c1011111`: IRET: Return from interrupt handler
 
