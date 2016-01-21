@@ -168,6 +168,8 @@ def try_label(tokens: [Token], status: AsmStatus) -> bool:
         symbol = tokens[0].token
         if symbol not in status.symtable:
             status.symtable[symbol] = status.pointer
+        else:
+            log_error(status.lineno, tokens[0].col, "Label '%s' already exists" % symbol)
         del tokens[0:2]
         return True
     return False
