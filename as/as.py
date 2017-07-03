@@ -11,12 +11,12 @@ import sys
 
 
 def log_error(line: int, col: int, message: str):
-    logging.error(message, extra={'line': line+1, 'col': col+1})
+    logging.error(message, extra={'line': line + 1, 'col': col + 1})
     sys.exit(1)
 
 
 def log_warn(line: int, col: int, message: str):
-    logging.warn(message, extra={'line': line+1, 'col': col+1})
+    logging.warn(message, extra={'line': line + 1, 'col': col + 1})
 
 
 class Token:
@@ -155,6 +155,7 @@ def parse_token(line: str, lineno: int) -> [Token]:
 
 
 class AsmStatus:
+
     def __init__(self):
         self.memory = bytearray(0x10000)
         self.symtable = {}
